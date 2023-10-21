@@ -1,7 +1,7 @@
 # DiscordBot
 Для запуску цього бота потрібно виконати такі прості дії:
 
-1. Поміняти токен на свій згенерований в Discord Developer Portal.
+1. Поміняти токен (в класі Bot.cs) на свій згенерований в Discord Developer Portal.
 2. Добавити бота в Guild за таким посиланням: https://discord.com/api/oauth2/authorize?client_id=1126065900915802225&permissions=8&scope=bot
    
 Все, бот готовий до користання!
