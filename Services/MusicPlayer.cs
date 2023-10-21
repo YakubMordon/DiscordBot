@@ -10,27 +10,60 @@ using YoutubeExplode.Videos.Streams;
 
 namespace DiscordBot.Services
 {
+    /// <summary>
+    /// Перелік статусів для повторення аудіо композицій.
+    /// </summary>
     public enum RepeatStatus
     {
-        RepeatSingle,
-        RepeatAll
+        RepeatSingle, // Повторювати одну аудіо композицію
+        RepeatAll     // Повторювати всі аудіо композиції у черзі
     }
 
+    /// <summary>
+    /// Клас для управління програвачем музики та пов'язаної інфраструктури.
+    /// </summary>
     public class MusicPlayer
     {
+        /// <summary>
+        /// Словник, у якому зберігаються черги пісень для кожної групи
+        /// </summary>
         private static readonly Dictionary<ulong, Queue<Video>> _musicQueue = new Dictionary<ulong, Queue<Video>>();
+
+        /// <summary>
+        /// Словник, у якому зберігаються всі голосові канали, до яких доєднаний бот
+        /// </summary>
         private static readonly Dictionary<ulong, VoiceNextConnection> _voiceConnections = new Dictionary<ulong, VoiceNextConnection>();
+
+        /// <summary>
+        /// Словник, у якому зберігається стан, чи потрібно пропускати поточне відео, в голосовому каналі
+        /// </summary>
         private static readonly Dictionary<ulong, bool> _isSkipped = new Dictionary<ulong, bool>();
+
+        /// <summary>
+        /// Словник, у якому зберігається статус повторення для кожної гільдії
+        /// </summary>
         private static readonly Dictionary<ulong, RepeatStatus?> _repeatStatus = new Dictionary<ulong, RepeatStatus?>();
+
+        /// <summary>
+        /// Змінна, для взаємодії з Youtube
+        /// </summary>
         private static readonly YoutubeClient _youtubeClient = new YoutubeClient();
+
+        /// <summary>
+        /// Шаблон, для надсилання повідомлення, яке відео відтворюється
+        /// </summary>
         private static readonly DiscordEmbedBuilder _queueEmbed = new DiscordEmbedBuilder()
             .WithTitle("Now Playing:")
             .WithColor(DiscordColor.Blurple);
 
+        /// <summary>
+        /// Відтворює аудіо з YouTube за URL у голосовому каналі користувача.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <param name="url">URL-адреса YouTube відео.</param>
+        /// <returns>Завдання, яке представляє асинхронне відтворення відео.</returns>
         public static async Task PlayMusicAsync(CommandContext ctx, string url)
         {
-            // Your code for playing audio
-            // Make sure to properly initialize voiceNext and voiceChannel
             if (ctx.Guild == null)
             {
                 await ctx.RespondAsync("This bot does not accept commands over direct messages");
@@ -57,7 +90,6 @@ namespace DiscordBot.Services
                 if (voiceChannel != null)
                 {
                     Console.WriteLine("User voice channel is not null");
-                    // Check if the URL is a valid YouTube link
                     if (!UrlChecker.IsYouTubeUrl(url))
                     {
                         await ctx.RespondAsync("Invalid YouTube URL");
@@ -65,7 +97,6 @@ namespace DiscordBot.Services
                         return;
                     }
 
-                    // Check if there is an existing music queue for the guild
                     if (!_musicQueue.TryGetValue(ctx.Guild.Id, out var guildQueue))
                     {
                         Console.WriteLine("Creating queue of songs");
@@ -74,14 +105,14 @@ namespace DiscordBot.Services
                     }
 
                     Console.WriteLine("Adding song to queue");
-                    // Add the URL to the guild's music queue
+                    
                     guildQueue.Enqueue(await _youtubeClient.Videos.GetAsync(url));
 
                     Console.WriteLine("Added to music queue");
 
                     await ctx.RespondAsync("Added to the music queue");
 
-                    // If this is the first song in the queue, start playing it
+                    
                     if (guildQueue.Count == 1)
                     {
                         Console.WriteLine("Queue is not 0");
@@ -97,7 +128,7 @@ namespace DiscordBot.Services
             else
             {
                 Console.WriteLine("Bot voice channel is not null");
-                // Check if the URL is a valid YouTube link
+                
                 if (!UrlChecker.IsYouTubeUrl(url))
                 {
                     await ctx.RespondAsync("Invalid YouTube URL");
@@ -105,7 +136,7 @@ namespace DiscordBot.Services
                     return;
                 }
 
-                // Check if there is an existing music queue for the guild
+                
                 if (!_musicQueue.TryGetValue(ctx.Guild.Id, out var guildQueue))
                 {
                     Console.WriteLine("Creating queue of songs");
@@ -114,7 +145,7 @@ namespace DiscordBot.Services
                 }
 
                 Console.WriteLine("Adding song to queue");
-                // Add the URL to the guild's music queue
+                
                 guildQueue.Enqueue(await _youtubeClient.Videos.GetAsync(url));
 
                 Console.WriteLine("Added to music queue");
@@ -131,6 +162,13 @@ namespace DiscordBot.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Асинхронно відтворює наступне відео з черги для заданого сервера.
+        /// </summary>
+        /// <param name="ctx">Контекст команди Discord.</param>
+        /// <param name="voiceChannel">Аудіоканал, на якому відтворювати відео.</param>
+        /// <returns>Завдання, яке представляє асинхронне відтворення наступного відео з черги.</returns>
         private static async Task PlayNextSongAsync(CommandContext ctx, DiscordChannel voiceChannel)
         {
             if (_musicQueue.TryGetValue(ctx.Guild.Id, out var guildQueue) && guildQueue.Count > 0)
@@ -236,6 +274,12 @@ namespace DiscordBot.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Перескакує до наступної пісні в черзі музичного бота у голосовому каналі сервера.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, який містить інформацію про сервер та виклик.</param>
+        /// <returns>Завдання, яке представляє асинхронний процес перескакування пісні.</returns>
         public static async Task SkipSongAsync(CommandContext ctx)
         {
             if (_voiceConnections.TryGetValue(ctx.Guild.Id, out var connection))
@@ -255,6 +299,12 @@ namespace DiscordBot.Services
                 await ctx.RespondAsync("The bot is not currently playing any songs");
             }
         }
+
+        /// <summary>
+        /// Перескакує до наступної пісні в черзі музичного бота у голосовому каналі сервера для Слеш-команди.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, який містить інформацію про сервер та виклик.</param>
+        /// <returns>Завдання, яке представляє асинхронний процес перескакування пісні.</returns>
         public static async Task SkipSongAsync(InteractionContext ctx)
         {
             if (_voiceConnections.TryGetValue(ctx.Guild.Id, out var connection))
@@ -275,6 +325,12 @@ namespace DiscordBot.Services
             }
         }
 
+        /// <summary>
+        /// Повторює поточний статус аудіоплеєра у голосовому каналі.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, що викликає метод.</param>
+        /// <param name="status">Новий статус для повторення (або null для вимкнення повторення).</param>
+        /// <returns>Асинхронна задача, яка представляє статус повторення.</returns>
         public static async Task RepeatStatusAsync(CommandContext ctx, RepeatStatus? status)
         {
             if (_voiceConnections.TryGetValue(ctx.Guild.Id, out var connection))
@@ -293,6 +349,13 @@ namespace DiscordBot.Services
                 await ctx.RespondAsync("The bot is not currently playing any songs");
             }
         }
+
+        /// <summary>
+        /// Повторює поточний статус аудіоплеєра у голосовому каналі для Слеш-команди.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, що викликає метод.</param>
+        /// <param name="status">Новий статус для повторення (або null для вимкнення повторення).</param>
+        /// <returns>Асинхронна задача, яка представляє статус повторення.</returns>
         public static async Task RepeatStatusAsync(InteractionContext ctx, RepeatStatus? status)
         {
             if (_voiceConnections.TryGetValue(ctx.Guild.Id, out var connection))
@@ -312,6 +375,11 @@ namespace DiscordBot.Services
             }
         }
 
+        /// <summary>
+        /// Відображає чергу відтворення музики для вказаного серверу.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, що викликає цей метод.</param>
+        /// <returns>Завдання, яке представляє асинхронну операцію.</returns>
         public static async Task ShowQueueAsync(CommandContext ctx)
         {
             if (_musicQueue.TryGetValue(ctx.Guild.Id, out var guildQueue) && guildQueue.Count > 0)
@@ -338,6 +406,12 @@ namespace DiscordBot.Services
                 await ctx.RespondAsync("The music queue is empty");
             }
         }
+
+        /// <summary>
+        /// Відображає чергу відтворення музики для вказаного серверу для Слеш-команд.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, що викликає цей метод.</param>
+        /// <returns>Завдання, яке представляє асинхронну операцію.</returns>
         public static async Task ShowQueueAsync(InteractionContext ctx)
         {
             if (_musicQueue.TryGetValue(ctx.Guild.Id, out var guildQueue) && guildQueue.Count > 0)
@@ -368,6 +442,11 @@ namespace DiscordBot.Services
             }
         }
 
+        /// <summary>
+        /// Асинхронний метод, який зупиняє відтворення музики та роз'єднує бота у голосовому каналі.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, який містить інформацію про викликану команду.</param>
+        /// <returns>Завдання, яке представляє асинхронний процес зупинки бота та відтворення музики.</returns>
         public static async Task StopAsync(CommandContext ctx)
         {
             var voiceNext = ctx.Client?.GetVoiceNext();
@@ -391,6 +470,12 @@ namespace DiscordBot.Services
                 _musicQueue.Remove(ctx.Guild.Id);
             }
         }
+
+        /// <summary>
+        /// Асинхронний метод, який зупиняє відтворення музики та роз'єднує бота у голосовому каналі для Слеш-команд.
+        /// </summary>
+        /// <param name="ctx">Контекст команди, який містить інформацію про викликану команду.</param>
+        /// <returns>Завдання, яке представляє асинхронний процес зупинки бота та відтворення музики.</returns>
         public static async Task StopAsync(InteractionContext ctx)
         {
             var voiceNext = ctx.Client?.GetVoiceNext();
@@ -416,6 +501,12 @@ namespace DiscordBot.Services
             }
         }
 
+        /// <summary>
+        /// Змінює гучність аудіо для відтворення в голосовому каналі.
+        /// </summary>
+        /// <param name="ctx">Об'єкт, який представляє контекст команди.</param>
+        /// <param name="volume">Значення гучності, яке слід встановити (повинно бути в межах від 0 до 2.0).</param>
+        /// <returns>Задача, яка представляє асинхронний процес зміни гучності.</returns>
         public static async Task ChangeVolumeAsync(CommandContext ctx, float volume)
         {
             if (_voiceConnections.TryGetValue(ctx.Guild.Id, out var connection))
@@ -439,6 +530,12 @@ namespace DiscordBot.Services
             }
         }
 
+        /// <summary>
+        /// Завантажує відео з YouTube за заданим URL та надсилає його на сервер Discord.
+        /// </summary>
+        /// <param name="ctx">Контекст команди Discord.</param>
+        /// <param name="url">URL відео на YouTube, яке потрібно завантажити.</param>
+        /// <returns>Асинхронна задача для завантаження відео.</returns>
         public static async Task DownloadVideoAsync(CommandContext ctx, string url)
         {
             if (!UrlChecker.IsYouTubeUrl(url))
@@ -484,6 +581,13 @@ namespace DiscordBot.Services
             Console.WriteLine("Video was sended");
             File.Delete(videoFilePath);
         }
+
+        /// <summary>
+        /// Завантажує відео з YouTube за заданим URL та надсилає його на сервер Discord для Слеш-команд.
+        /// </summary>
+        /// <param name="ctx">Контекст команди Discord.</param>
+        /// <param name="url">URL відео на YouTube, яке потрібно завантажити.</param>
+        /// <returns>Асинхронна задача для завантаження відео.</returns>
         public static async Task DownloadVideoAsync(InteractionContext ctx, string url)
         {
             if (!UrlChecker.IsYouTubeUrl(url))
