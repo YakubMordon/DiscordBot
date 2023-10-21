@@ -7,8 +7,16 @@ using DSharpPlus.SlashCommands;
 
 namespace DiscordBot.SLCommands
 {
+    /// <summary>
+    /// Клас MusicSL для обробки Слеш-команд, пов'язаних із музикою.
+    /// </summary>
     public class MusicSL : ApplicationCommandModule
     {
+        /// <summary>
+        /// Обробляє команду `/ping` та надсилає відповідь "Pong!".
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє асинхронну відповідь</returns>
         [SlashCommand("ping", "Returns pong")]
         [RequireRoles(RoleCheckMode.Any, "Owner", "Admins")]
         public async Task PingCommand(InteractionContext ctx)
@@ -17,6 +25,12 @@ namespace DiscordBot.SLCommands
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Pong!"));
         }
 
+        /// <summary>
+        /// Обробляє команду `/play` та готується до відтворення відео за вказаним URL на YouTube.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <param name="url">URL відео на YouTube.</param>
+        /// <returns>Завдання, яке представляє асинхронне відтворення відео</returns>
         [SlashCommand("play", "Plays the audio path from a YouTube video by the given URL")]
         public async Task PlayCommand(InteractionContext ctx, [Option("url", "YouTube video URL")] string url)
         {
@@ -34,6 +48,11 @@ namespace DiscordBot.SLCommands
             await commandsNext.ExecuteCommandAsync(fakeContext);
         }
 
+        /// <summary>
+        /// Обробляє команду `/stop` та готується до зупинення відтворення відео.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє зупинку відтворення відео</returns>
         [SlashCommand("stop", "Stops Music Player Bot and disconnects it from the voice chat")]
         public async Task StopCommand(InteractionContext ctx)
         {
@@ -43,6 +62,11 @@ namespace DiscordBot.SLCommands
             await MusicPlayer.StopAsync(ctx);
         }
 
+        /// <summary>
+        /// Обробляє команду `/skip` та готується до пропуску відео, яке є поточним.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє пропуск відео, яке є поточним.</returns>
         [SlashCommand("skip", "Skips the current song in the queue")]
         public async Task SkipCommand(InteractionContext ctx)
         {
@@ -52,6 +76,11 @@ namespace DiscordBot.SLCommands
             await MusicPlayer.SkipSongAsync(ctx);
         }
 
+        /// <summary>
+        /// Обробляє команду `/list` та готується до відображення списку черги відтворення відео.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє список черги відтворення відео.</returns>
         [SlashCommand("list", "Shows the queue of music")]
         public async Task ListCommand(InteractionContext ctx)
         {
@@ -61,6 +90,12 @@ namespace DiscordBot.SLCommands
             await MusicPlayer.ShowQueueAsync(ctx);
         }
 
+        /// <summary>
+        /// Обробляє команду `/volume` та готується до зміни гучності відтворення відео.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <param name="volume">Рядок, у якому вказано гучність</param>
+        /// <returns>Завдання, яке представляє зміну гучності.</returns>
         [SlashCommand("volume", "Changes the volume of the bot")]
         public async Task ChangeVolumeCommand(InteractionContext ctx, [Option("volume", "Argument, which needs to be in range from 0,0 to 2,0 Number should be written with comma")] string volume)
         {
@@ -79,6 +114,11 @@ namespace DiscordBot.SLCommands
 
         }
 
+        /// <summary>
+        /// Обробляє команду `/repeatoff` та готується до зупинення повторення поточної пісні або списку пісень.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє зупинення повторення.</returns>
         [SlashCommand("repeatoff", "Turns off repeat of all music")]
         public async Task RepeatOffCommand(InteractionContext ctx)
         {
@@ -87,6 +127,11 @@ namespace DiscordBot.SLCommands
             await MusicPlayer.RepeatStatusAsync(ctx, null);
         }
 
+        /// <summary>
+        /// Обробляє команду `/repeat` та готується до повторення поточної пісні.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє повторення поточної пісні.</returns>
         [SlashCommand("repeat", "Turns on repeat on a single music. Single music is the currently playing music")]
         public async Task RepeatSingleCommand(InteractionContext ctx)
         {
@@ -96,6 +141,11 @@ namespace DiscordBot.SLCommands
             
         }
 
+        /// <summary>
+        /// Обробляє команду `/repeatall` та готується до повторення всього списку пісень.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <returns>Завдання, яке представляє повторення всього списку пісень.</returns>
         [SlashCommand("repeatall", "Turns on repeat on a queue of music")]
         public async Task RepeatAllCommand(InteractionContext ctx)
         {
@@ -105,6 +155,12 @@ namespace DiscordBot.SLCommands
 
         }
 
+        /// <summary>
+        /// Обробляє команду `/download` та готується до скачування відео з відеохостингу Youtube.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії з командою.</param>
+        /// <param name="url">URL-адреса на Youtube відео</param>
+        /// <returns>Завдання, яке представляє скачування відео.</returns>
         [SlashCommand("download", "Downloads from YouTube by the given URL")]
         public async Task DownloadCommand(InteractionContext ctx, [Option("url", "YouTube video URL")] string url)
         {

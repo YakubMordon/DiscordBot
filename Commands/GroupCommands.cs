@@ -5,8 +5,17 @@ using DSharpPlus.Entities;
 
 namespace DiscordBot.Commands
 {
+    /// <summary>
+    /// Клас GroupCommands для обробки команд по типу ?{command_name}, пов'язаних із групою.
+    /// </summary>
     public class GroupCommands : BaseCommandModule
     {
+        /// <summary>
+        /// Створює опитування із запитанням і варіантами відповідей для команди з шаблоном ?{command_name}.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії</param>
+        /// <param name="pollTitle">Запитання для опитування. Решта рядка це є опції</param>
+        /// <returns>Завдання, що представляє асинхронний процес створення опитування</returns>
         [Command("poll")]
         [Description("Creates a poll, first argument is always a question, other are options, you need to write at least 2 options, separate them by comma")]
         public async Task Poll(CommandContext ctx, [Description("String which contains question and options\nQuestion is First argument. Others are options of answer")][RemainingText] string pollTitle)
@@ -62,8 +71,12 @@ namespace DiscordBot.Commands
 
             Console.WriteLine("Poll reactions created");
         }
-
-
+        
+        /// <summary>
+        /// Метод для получення емодзі за індексом
+        /// </summary>
+        /// <param name="index">Індекс емодзі</param>
+        /// <returns>Емодзі</returns>
         private string GetEmoji(int index)
         {
             // Define a list of emojis for the options (A, B, C, D, ...)

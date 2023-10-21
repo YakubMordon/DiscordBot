@@ -9,8 +9,18 @@ using DSharpPlus.SlashCommands;
 
 namespace DiscordBot.SLCommands
 {
+    /// <summary>
+    /// Клас GroupSL для обробки Слеш-команд, пов'язаних із групою.
+    /// </summary>
     public class GroupSL : ApplicationCommandModule
     {
+        /// <summary>
+        /// Створює опитування із запитанням і варіантами відповідей для Слеш-команди.
+        /// </summary>
+        /// <param name="ctx">Контекст взаємодії</param>
+        /// <param name="question">Запитання для опитування</param>
+        /// <param name="options">Варіанти відповідей, розділені комами</param>
+        /// <returns>Завдання, що представляє асинхронний процес створення опитування</returns>
         [SlashCommand("poll", "Creates a poll with a question and options")]
         public async Task Poll(InteractionContext ctx,
     [Option("question", "The question for the poll")]
@@ -73,6 +83,11 @@ namespace DiscordBot.SLCommands
             Console.WriteLine("Poll reactions created");
         }
 
+        /// <summary>
+        /// Метод для получення емодзі за індексом
+        /// </summary>
+        /// <param name="index">Індекс емодзі</param>
+        /// <returns>Емодзі</returns>
         private string GetEmoji(int index)
         {
             // Define a list of emojis for the options (A, B, C, D, ...)
