@@ -181,19 +181,20 @@ namespace DiscordBot.Services
 
                 var voiceNext = ctx.Client?.GetVoiceNext();
 
-                if (audioStream != null)
+                if (audioStream is not null)
                 {
                     Console.WriteLine("Downloading video");
                     var tempFilePath = Path.GetTempFileName();
                     int bufferLen = (int)audioStream.Length;
-                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferLen, true))
+
+                    await using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferLen, true))
                     {
                         await audioStream.CopyToAsync(fileStream);
                     }
 
                     Console.WriteLine("Entering Audio transmitter");
 
-                    using (var audioFileReader = new AudioFileReader(tempFilePath))
+                    await using (var audioFileReader = new AudioFileReader(tempFilePath))
                     using (var resampler = new MediaFoundationResampler(audioFileReader, new WaveFormat(48000, audioFileReader.WaveFormat.Channels))
                     {
                         ResamplerQuality = 60
